@@ -1,0 +1,37 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+@source '../../../../vendor/relaticle/flowforge/resources/views/**/*';
+
+/* Remove side padding from the content area when a FlowForge board is present */
+.fi-main:has(.flowforge-column) {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+}
+
+/* Compact badge-style kanban cards for the setlist builder */
+.flowforge-card {
+    margin-bottom: 3px !important;
+    border-radius: 4px !important;
+    box-shadow: none !important;
+}
+
+.flowforge-card:hover {
+    box-shadow: none !important;
+}
+
+.flowforge-card .flowforge-card-content > div:first-child {
+    margin-bottom: 0 !important;
+}
+
+.flowforge-card .flowforge-card-content h4 {
+    padding: 3px 8px !important;
+/*    font-size: 0.7rem !important; */
+    font-weight: 500 !important;
+    line-height: 1.2 !important;
+}
+
+.flowforge-card .flowforge-card-content > div:last-child {
+    padding: 0 !important;
+}
