@@ -5,9 +5,14 @@ namespace App\Filament\Resources\Setlists\Pages;
 use App\Filament\Resources\Setlists\SetlistResource;
 use App\Models\SetlistItem;
 use App\Models\Song;
+use App\Services\SetlistAutoBuilder;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Support\Enums\Width;
+use Illuminate\Contracts\Support\Htmlable;
 use Relaticle\Flowforge\Board;
 use Relaticle\Flowforge\BoardResourcePage;
 use Relaticle\Flowforge\Column;
@@ -18,7 +23,7 @@ class SetlistBoardPage extends BoardResourcePage
 
     protected static string $resource = SetlistResource::class;
 
-    protected Width | string | null $maxContentWidth = Width::Full;
+    protected Width|string|null $maxContentWidth = Width::Full;
 
     public function mount(int|string $record): void
     {
@@ -61,14 +66,53 @@ class SetlistBoardPage extends BoardResourcePage
         return 'Build';
     }
 
-    public function getTitle(): string|\Illuminate\Contracts\Support\Htmlable
+    public function getTitle(): string|Htmlable
     {
-        return 'Build: ' . $this->getRecord()->name;
+        return 'Build: '.$this->getRecord()->name;
     }
 
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('autoBuild')
+                ->label('Auto-Build')
+                ->icon('heroicon-o-sparkles')
+                ->color('primary')
+                ->fillForm(fn (): array => [
+                    'show_length_minutes' => $this->getRecord()->show_length_minutes,
+                    'number_of_sets' => $this->getRecord()->number_of_sets,
+                ])
+                ->schema([
+                    TextInput::make('show_length_minutes')
+                        ->label('Show Length (minutes)')
+                        ->numeric()
+                        ->minValue(1)
+                        ->maxValue(480)
+                        ->required()
+                        ->placeholder('e.g. 90'),
+                    Select::make('number_of_sets')
+                        ->label('Number of Sets')
+                        ->options([1 => '1 Set', 2 => '2 Sets', 3 => '3 Sets'])
+                        ->required(),
+                ])
+                ->modalDescription('Songs already placed in sets will be reassigned. Songs without a runtime will be left in the library.')
+                ->modalSubmitActionLabel('Build Setlist')
+                ->action(function (array $data, SetlistAutoBuilder $builder): void {
+                    $setlist = $this->getRecord();
+
+                    $setlist->update([
+                        'show_length_minutes' => $data['show_length_minutes'],
+                        'number_of_sets' => $data['number_of_sets'],
+                    ]);
+
+                    $builder->build($setlist->fresh());
+
+                    Notification::make()
+                        ->title('Setlist built!')
+                        ->success()
+                        ->send();
+                }),
+
             Action::make('back')
                 ->label('Back to Setlist')
                 ->url(SetlistResource::getUrl('edit', ['record' => $this->getRecord()]))

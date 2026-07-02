@@ -2,10 +2,12 @@
 
 namespace App\Filament\Resources\Songs\Schemas;
 
+use App\Enums\EnergyLevel;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Schema;
 
 class SongForm
@@ -40,11 +42,17 @@ class SongForm
                             ->placeholder('e.g. 3:45')
                             ->hint('mm:ss')
                             ->rules(['nullable', 'regex:/^\d{1,2}:[0-5]\d$/']),
+                        Select::make('energy_level')
+                            ->label('Energy Level')
+                            ->options(EnergyLevel::class)
+                            ->nullable(),
                         Toggle::make('has_track')
                             ->label('Has Track?'),
                         Toggle::make('is_acoustic')
-                            ->label('Is Acoustic?')
-                            ->columnStart(3),
+                            ->label('Is Acoustic?'),
+                        Toggle::make('is_opener')
+                            ->label('Set Opener?')
+                            ->helperText('Marks this song as a strong set opener.'),
                         Textarea::make('arrangement')
                             ->columnSpanFull()
                             ->rows(3),

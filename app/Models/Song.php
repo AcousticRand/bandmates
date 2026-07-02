@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\EnergyLevel;
 use Database\Factories\SongFactory;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -29,13 +30,17 @@ class Song extends Model
         'arrangement',
         'runtime',
         'has_track',
-        'is_acoustic'
+        'is_acoustic',
+        'is_opener',
+        'energy_level',
     ];
 
     protected function casts(): array
     {
         return [
             'release_year' => 'integer',
+            'is_opener' => 'boolean',
+            'energy_level' => EnergyLevel::class,
         ];
     }
 

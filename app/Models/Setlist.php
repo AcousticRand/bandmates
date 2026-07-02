@@ -19,12 +19,14 @@ class Setlist extends Model
         'name',
         'description',
         'number_of_sets',
+        'show_length_minutes',
     ];
 
     protected function casts(): array
     {
         return [
             'number_of_sets' => 'integer',
+            'show_length_minutes' => 'integer',
         ];
     }
 

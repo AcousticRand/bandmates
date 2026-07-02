@@ -162,3 +162,50 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - Do NOT delete tests without approval.
 
 </laravel-boost-guidelines>
+
+# BandMates — Project Context
+
+## What This App Is
+
+Multi-tenant band management app. Each band is a **tenant** (via `laraveldaily/filateams`). All models carry `team_id` and a `team()` BelongsTo. New Team relationships must be registered in `AppServiceProvider` via `resolveRelationUsing`.
+
+Navigation groups: **Repertoire** (Songs, Setlists) · **Bookings** (Venues, Gigs).
+
+## Domain Model
+
+### Songs (`app/Models/Song.php`)
+- `runtime` — stored as integer seconds; exposed/accepted as `mm:ss` via an Eloquent `Attribute` cast
+- `is_acoustic` (bool) — whether the song is played acoustically
+- `is_opener` (bool) — marks the song as a strong set opener
+- `energy_level` — `App\Enums\EnergyLevel` (High / Medium / Low), nullable; drives ordering in auto-build
+
+### Setlists (`app/Models/Setlist.php`)
+- `number_of_sets` (1–3) — how many sets the performance has
+- `show_length_minutes` — total show length including breaks; used by the auto-builder
+
+### SetlistItems (`app/Models/SetlistItem.php`)
+- `set_number` 0 = Song Library, 1/2/3 = sets
+- `position` — `DECIMAL(20,10)` managed by FlowForge for drag-and-drop ordering
+
+## Setlist Board (`SetlistBoardPage`)
+Extends FlowForge's `BoardResourcePage` with `InteractsWithRecord`. Key gotcha: everything that touches `$this->getRecord()` must be a **Closure** — board config runs before `mount()`.
+
+On `mount()`, `syncSongLibrary()` adds any team songs not yet in the setlist to the library column (set_number=0) without touching songs already in a set.
+
+## Auto-Build Feature (`app/Services/SetlistAutoBuilder.php`)
+
+Triggered by the **Auto-Build** header action on the board page. Modal pre-fills `show_length_minutes` and `number_of_sets` from the setlist.
+
+**Break time constants:** 1 set = 0 min · 2 sets = 22 min · 3 sets = 30 min  
+`targetSecs = (showLengthMinutes × 60 − breakSecs) / numberOfSets`
+
+**Per-set algorithm:**
+1. Pick one opener (highest available energy, shuffled within tier)
+2. First electric pass — count-limited to `floor(estimatedSongs × 0.60)` to reserve slots for acoustic
+3. Acoustic block — capped at `floor(nonAcousticCount × 2/3)` songs, ensuring acoustic ≤ 40% of set. Falls back to `estimatedSongs` when no electric/opener exists.
+4. Second electric pass — mops up remaining time
+5. Ordering: opener → first-half electric → acoustic → second-half electric → second-pass electric
+
+**Randomness:** `shuffleWithinEnergyGroups()` shuffles within each energy tier (High→Medium→Low→unset) so builds feel different each run.
+
+**Pool safety:** `$usedIds` array prevents any song appearing in more than one set.
