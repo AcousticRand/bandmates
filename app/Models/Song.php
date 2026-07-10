@@ -33,6 +33,11 @@ class Song extends Model
         'is_acoustic',
         'is_opener',
         'energy_level',
+        'is_active',
+    ];
+
+    protected $attributes = [
+        'is_active' => true,
     ];
 
     protected function casts(): array
@@ -41,6 +46,7 @@ class Song extends Model
             'release_year' => 'integer',
             'is_opener' => 'boolean',
             'energy_level' => EnergyLevel::class,
+            'is_active' => 'boolean',
         ];
     }
 

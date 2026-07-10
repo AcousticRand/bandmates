@@ -52,11 +52,11 @@ class SetlistBoardPage extends BoardResourcePage
                     ->color('primary'),
                 Column::make('2')
                     ->label('Set 2')
-                    ->color('success')
+                    ->color('primary')
                     ->hidden(fn () => $this->getRecord()->number_of_sets < 2),
                 Column::make('3')
                     ->label('Set 3')
-                    ->color('warning')
+                    ->color('primary')
                     ->hidden(fn () => $this->getRecord()->number_of_sets < 3),
             ]);
     }
@@ -128,6 +128,7 @@ class SetlistBoardPage extends BoardResourcePage
         $existingSongIds = SetlistItem::where('setlist_id', $setlist->id)->pluck('song_id');
 
         Song::where('team_id', $setlist->team_id)
+            ->where('is_active', true)
             ->whereNotIn('id', $existingSongIds)
             ->orderBy('title')
             ->each(function (Song $song) use ($setlist): void {

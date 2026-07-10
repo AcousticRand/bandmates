@@ -4,7 +4,6 @@ use App\Filament\Resources\Songs\Pages\CreateSong;
 use App\Filament\Resources\Songs\Pages\EditSong;
 use App\Filament\Resources\Songs\Pages\ListSongs;
 use App\Models\Song;
-
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -29,10 +28,10 @@ it('can create a song', function () {
 
     Livewire::test(CreateSong::class)
         ->fillForm([
-            'title'  => $data->title,
+            'title' => $data->title,
             'artist' => $data->artist,
-            'album'  => $data->album,
-            'genre'  => $data->genre,
+            'album' => $data->album,
+            'genre' => $data->genre,
         ])
         ->call('create')
         ->assertNotified()
@@ -75,6 +74,18 @@ it('accepts a valid mm:ss runtime', function () {
     expect($song)->not->toBeNull()
         ->and($song->runtime)->toBe('4:30')
         ->and($song->getAttributes()['runtime'])->toBe(270);
+});
+
+it('defaults a new song to active', function () {
+    $data = Song::factory()->make();
+
+    Livewire::test(CreateSong::class)
+        ->fillForm(['title' => $data->title])
+        ->call('create')
+        ->assertNotified();
+
+    $song = Song::where('title', $data->title)->where('team_id', $this->team->id)->first();
+    expect($song->is_active)->toBeTrue();
 });
 
 it('can update a song', function () {

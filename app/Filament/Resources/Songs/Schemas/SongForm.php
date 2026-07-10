@@ -53,6 +53,10 @@ class SongForm
                         Toggle::make('is_opener')
                             ->label('Set Opener?')
                             ->helperText('Marks this song as a strong set opener.'),
+                        Toggle::make('is_active')
+                            ->label('Active?')
+                            ->default(true)
+                            ->helperText('Inactive songs are excluded from auto-build.'),
                         Textarea::make('arrangement')
                             ->columnSpanFull()
                             ->rows(3),

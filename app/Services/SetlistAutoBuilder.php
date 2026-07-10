@@ -24,6 +24,7 @@ class SetlistAutoBuilder
         $targetSecs = (int) (($showLengthSecs - $breakSecs) / $numberOfSets);
 
         $songs = Song::where('team_id', $setlist->team_id)
+            ->where('is_active', true)
             ->whereNotNull('runtime')
             ->get();
 

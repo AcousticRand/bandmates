@@ -38,6 +38,7 @@ class SongFactory extends Factory
             'is_acoustic' => fake()->boolean(30),
             'is_opener' => fake()->boolean(20),
             'energy_level' => fake()->optional(0.7)->randomElement(EnergyLevel::cases()),
+            'is_active' => true,
         ];
     }
 }

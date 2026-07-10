@@ -9,6 +9,7 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 class SongsTable
@@ -19,6 +20,9 @@ class SongsTable
             ->columns([
                 TextColumn::make('title')
                     ->searchable()
+                    ->sortable(),
+                ToggleColumn::make('is_active')
+                    ->label('Active?')
                     ->sortable(),
                 TextColumn::make('artist')
                     ->searchable()
@@ -58,6 +62,8 @@ class SongsTable
             ->filters([
                 SelectFilter::make('energy_level')
                     ->options(EnergyLevel::class),
+                TernaryFilter::make('is_active')
+                    ->label('Active'),
             ])
             ->recordActions([
                 EditAction::make(),

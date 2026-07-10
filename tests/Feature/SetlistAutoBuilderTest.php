@@ -222,6 +222,25 @@ it('never assigns the same song to more than one set across three sets', functio
     expect($placedItems->count())->toBe($uniqueSongIds->count());
 });
 
+it('excludes inactive songs from auto-build', function () {
+    $setlist = Setlist::factory()->create([
+        'team_id' => $this->team->id,
+        'number_of_sets' => 1,
+        'show_length_minutes' => 60,
+    ]);
+
+    $active = Song::factory()->create(['team_id' => $this->team->id, 'is_opener' => false, 'is_active' => true, 'runtime' => 200]);
+    $inactive = Song::factory()->create(['team_id' => $this->team->id, 'is_opener' => false, 'is_active' => false, 'runtime' => 200]);
+
+    SetlistItem::create(['setlist_id' => $setlist->id, 'song_id' => $active->id, 'set_number' => 0, 'sort_order' => 0]);
+    SetlistItem::create(['setlist_id' => $setlist->id, 'song_id' => $inactive->id, 'set_number' => 0, 'sort_order' => 0]);
+
+    app(SetlistAutoBuilder::class)->build($setlist);
+
+    expect(SetlistItem::where('setlist_id', $setlist->id)->where('song_id', $active->id)->value('set_number'))->toBe(1);
+    expect(SetlistItem::where('setlist_id', $setlist->id)->where('song_id', $inactive->id)->value('set_number'))->toBe(0);
+});
+
 it('auto-build action updates setlist and builds songs', function () {
     $setlist = Setlist::factory()->create([
         'team_id' => $this->team->id,
